@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cipher & Parchment — Classical Cryptography Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Spectral+SC:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ================= LOGIN GATE ================= -->
+<div id="loginGate">
+  <div class="login-card">
+    <svg class="login-mark" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#c9a24b" stroke-width="2"/><circle cx="20" cy="20" r="11" fill="none" stroke="#5fd0c2" stroke-width="1.5"/><circle cx="20" cy="20" r="2.4" fill="#ece7d8"/></svg>
+    <h2>Cipher &amp; Parchment</h2>
+    <p class="sub">Enter the password to access the toolkit.</p>
+    <input type="password" id="loginPassword" placeholder="Password" autocomplete="off">
+    <button class="btn btn-brass" id="loginSubmit">Unlock</button>
+    <div class="login-error" id="loginError"></div>
+    
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="appRoot">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand" onclick="goTo('home')">
+      <svg class="brand-mark" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#c9a24b" stroke-width="2"/><circle cx="20" cy="20" r="11" fill="none" stroke="#5fd0c2" stroke-width="1.5"/><circle cx="20" cy="20" r="2.4" fill="#ece7d8"/></svg>
+      <div class="brand-text">
+        <div class="t1">Cipher &amp; Parchment</div>
+        <div class="t2">Classical Cryptography Toolkit</div>
+      </div>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">&#9776;</button>
+    <nav class="mainnav" id="mainNav">
+      <button data-view="home" class="active">Home</button>
+      <button data-view="workspace">Encrypt / Decrypt</button>
+      <button data-view="compare">Compare</button>
+      <button data-view="files">File Tools</button>
+      <button data-view="info">Algorithm Info</button>
+      <button data-view="help">Help</button>
+    </nav>
+  </div>
+</header>
+
+<div class="app">
+<main>
+
+  <!-- ================= HOME ================= -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <div>
+        <span class="eyebrow">Network Security — Mini Project</span>
+        <h1>Eight classical ciphers,<br>one glass-walled workbench.</h1>
+        <p class="lede">Encrypt and decrypt text the way it was done before computers did the guessing — substitution, transposition, matrices and one-time pads — and watch every step happen in the open, not behind a black box.</p>
+        <div class="cta-row">
+          <button class="btn btn-brass" onclick="goTo('workspace')">Open the workbench</button>
+          <button class="btn btn-ghost" onclick="goTo('info')">Read the algorithms</button>
+        </div>
+      </div>
+      <div class="disk-wrap">
+        <svg viewBox="0 0 400 400">
+          <g class="disk-outer">
+            <circle cx="200" cy="200" r="180" fill="none" stroke="#2b323e" stroke-width="1"/>
+            <circle cx="200" cy="200" r="150" fill="none" stroke="#c9a24b" stroke-width="1.5"/>
+            <g id="outerLetters" font-family="IBM Plex Mono" font-size="13" fill="#c9a24b"></g>
+          </g>
+          <g class="disk-inner">
+            <circle cx="200" cy="200" r="95" fill="none" stroke="#5fd0c2" stroke-width="1.5"/>
+            <g id="innerLetters" font-family="IBM Plex Mono" font-size="12" fill="#5fd0c2"></g>
+          </g>
+          <circle cx="200" cy="200" r="4" fill="#ece7d8"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="num">8</div><div class="lbl">Ciphers implemented</div></div>
+      <div class="stat-card"><div class="num">2</div><div class="lbl">Families — substitution &amp; transposition</div></div>
+      <div class="stat-card"><div class="num">100%</div><div class="lbl">Runs locally in your browser</div></div>
+      <div class="stat-card"><div class="num">&lt;1ms</div><div class="lbl">Typical execution time</div></div>
+    </div>
+
+    <div class="quicklinks">
+      <div class="quick-card" onclick="goTo('workspace')">
+        <span class="eyebrow">01</span>
+        <h3>Encrypt &amp; Decrypt</h3>
+        <p>Pick a cipher, supply a key, and watch the transformation happen character by character.</p>
+      </div>
+      <div class="quick-card" onclick="goTo('compare')">
+        <span class="eyebrow">02</span>
+        <h3>Compare Algorithms</h3>
+        <p>Run the same plaintext through all eight ciphers side by side, with timing for each.</p>
+      </div>
+      <div class="quick-card" onclick="goTo('info')">
+        <span class="eyebrow">03</span>
+        <h3>Algorithm Info</h3>
+        <p>Short, exam-ready explanations of how each cipher works and where it's used.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= WORKSPACE ================= -->
+  <section class="view" id="view-workspace">
+    <div class="section-head">
+      <span class="eyebrow">Workbench</span>
+      <h2>Encrypt / Decrypt</h2>
+      <p>Choose a cipher and a direction, enter your text and key, then run it. Expand "Show process" to see exactly how the algorithm gets from input to output.</p>
+    </div>
+
+    <div class="workspace">
+      <!-- Controls -->
+      <div class="panel">
+        <div class="mode-toggle">
+          <button id="modeEncryptBtn" class="active" onclick="setMode('E')">Encrypt</button>
+          <button id="modeDecryptBtn" onclick="setMode('D')">Decrypt</button>
+        </div>
+
+        <label class="field-label">Cipher</label>
+        <select id="cipherSelect" onchange="onCipherChange()"></select>
+
+        <label class="field-label">Key</label>
+        <div class="key-row">
+          <input type="text" id="keyInput" placeholder="Enter key">
+          <button class="btn-small" id="autoKeyBtn" onclick="autoGenerateKey()">Auto</button>
+        </div>
+        <div class="hint" id="keyHint"></div>
+
+        <label class="field-label">Text</label>
+        <textarea id="textInput" placeholder="Type or paste your text here">NETWORK SECURITY</textarea>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="run-row">
+          <button class="btn btn-brass" onclick="runCipher()">Run</button>
+          <button class="btn btn-ghost" onclick="clearWorkspace()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div class="panel">
+        <div class="output-label">
+          <span class="eyebrow" id="outputEyebrow">Encrypted text</span>
+          <button class="copy-btn" onclick="copyOutput()">Copy ⧉</button>
+        </div>
+        <div class="output-panel">
+          <div class="output-text" id="outputText">Output will appear here once you run a cipher.</div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-chip">Execution time <b id="execTime">—</b></div>
+          <div class="metric-chip">Characters processed <b id="charCount">—</b></div>
+          <div class="metric-chip">Key used <b id="keyUsedChip">—</b></div>
+        </div>
+
+        <button class="process-toggle" id="processToggleBtn" onclick="toggleProcess()">
+          <span id="processToggleLabel">Show encryption process</span>
+          <span>▾</span>
+        </button>
+        <div class="process-body" id="processBody">
+          <div id="processContent"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= COMPARE ================= -->
+  <section class="view" id="view-compare">
+    <div class="section-head">
+      <span class="eyebrow">Benchmark</span>
+      <h2>Compare Algorithms</h2>
+      <p>Run one plaintext through all eight ciphers with auto-generated keys, and compare the resulting ciphertext and execution time.</p>
+    </div>
+    <div class="panel">
+      <label class="field-label">Plaintext</label>
+      <textarea id="compareInput">HELLO WORLD</textarea>
+      <div class="run-row">
+        <button class="btn btn-brass" onclick="runCompare()">Compare all ciphers</button>
+      </div>
+    </div>
+    <div class="panel" id="compareResultsPanel" style="display:none;">
+      <table class="compare-table">
+        <thead>
+          <tr><th>Cipher</th><th>Key used</th><th>Ciphertext</th><th>Time</th></tr>
+        </thead>
+        <tbody id="compareTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= FILE TOOLS ================= -->
+  <section class="view" id="view-files">
+    <div class="section-head">
+      <span class="eyebrow">Utility module</span>
+      <h2>Encrypt / Decrypt a Text File</h2>
+      <p>Upload a plain .txt file, choose a cipher and key, and download the transformed result — all processed locally in your browser.</p>
+    </div>
+
+    <div class="panel">
+      <div class="mode-toggle">
+        <button id="fileModeEncryptBtn" class="active" onclick="setFileMode('E')">Encrypt file</button>
+        <button id="fileModeDecryptBtn" onclick="setFileMode('D')">Decrypt file</button>
+      </div>
+
+      <label class="field-label">Text file</label>
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <div style="font-size:26px;">📄</div>
+        <p><strong>Click to choose a .txt file</strong> or drag it here</p>
+      </div>
+      <input type="file" id="fileInput" accept=".txt" style="display:none;">
+      <div id="fileNameChip"></div>
+
+      <label class="field-label">Cipher</label>
+      <select id="fileCipherSelect" onchange="onFileCipherChange()"></select>
+
+      <label class="field-label">Key</label>
+      <div class="key-row">
+        <input type="text" id="fileKeyInput" placeholder="Enter key">
+        <button class="btn-small" onclick="autoGenerateFileKey()">Auto</button>
+      </div>
+      <div class="hint" id="fileKeyHint"></div>
+
+      <div class="error-box" id="fileErrorBox"></div>
+
+      <div class="run-row">
+        <button class="btn btn-brass" onclick="runFileCipher()">Process file</button>
+      </div>
+    </div>
+
+    <div class="panel" id="fileResultPanel" style="display:none;">
+      <div class="output-label"><span class="eyebrow">Result preview</span></div>
+      <div class="output-panel"><div class="output-text" id="fileOutputPreview"></div></div>
+      <div class="metrics-row">
+        <div class="metric-chip">Execution time <b id="fileExecTime">—</b></div>
+      </div>
+      <div class="run-row">
+        <button class="btn btn-brass" id="downloadBtn">Download result (.txt)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ALGORITHM INFO ================= -->
+  <section class="view" id="view-info">
+    <div class="section-head">
+      <span class="eyebrow">Reference</span>
+      <h2>Algorithm Information</h2>
+      <p>How each cipher works, what its key looks like, and where it fits in the history of cryptography.</p>
+    </div>
+    <div id="infoAccordion"></div>
+  </section>
+
+  <!-- ================= HELP ================= -->
+  <section class="view" id="view-help">
+    <div class="section-head">
+      <span class="eyebrow">Getting started</span>
+      <h2>Help</h2>
+      <p>A quick walkthrough of the toolkit, plus answers to common questions.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0;">Using the workbench</h3>
+      <ol class="steps-guide">
+        <li><h4>Pick a direction</h4><p>Choose Encrypt if you have plaintext, or Decrypt if you have ciphertext to recover.</p></li>
+        <li><h4>Choose a cipher</h4><p>Each cipher has a different key format — check the hint text under the key field.</p></li>
+        <li><h4>Enter your key</h4><p>Some ciphers (Monoalphabetic, One-Time Pad) can auto-generate a valid random key for you with the "Auto" button.</p></li>
+        <li><h4>Type your text and run it</h4><p>The output, execution time, and character count appear immediately on the right.</p></li>
+        <li><h4>Inspect the process</h4><p>Expand "Show process" to see a character-by-character or block-by-block breakdown of exactly how the algorithm produced that output.</p></li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0;">Frequently asked questions</h3>
+      <div class="help-grid">
+        <div>
+          <div class="faq-item"><h4>Why did decryption give me gibberish?</h4><p>You most likely used the wrong key, or a key in the wrong format for that cipher. Check the hint text — Rail Fence expects a number, Playfair expects a keyword, Hill expects exactly 4 letters.</p></div>
+          <div class="faq-item"><h4>What happens to spaces and punctuation?</h4><p>Most ciphers here pass non-letter characters through unchanged. Playfair, Hill, Rail Fence and Columnar Transposition strip spaces since classical implementations operate on continuous letter streams.</p></div>
+          <div class="faq-item"><h4>Is this secure for real use?</h4><p>No. Every cipher here is classical and broken by modern standards — they're for learning cryptographic principles, not protecting real secrets. Use AES or ChaCha20 for that.</p></div>
+        </div>
+        <div>
+          <div class="faq-item"><h4>Why is the Hill cipher key restricted?</h4><p>A 2×2 Hill key matrix must be invertible modulo 26 (its determinant must share no common factor with 26) or decryption is mathematically impossible. Try a key like <code>HILL</code> or <code>RSAX</code>.</p></div>
+          <div class="faq-item"><h4>What does "Auto" do for the key?</h4><p>For Monoalphabetic and One-Time Pad ciphers, it generates a valid random key of the right length so you can try the cipher immediately without picking one by hand.</p></div>
+          <div class="faq-item"><h4>Does anything leave my browser?</h4><p>No. All encryption, decryption and file processing runs in JavaScript on this page — nothing is uploaded anywhere.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Classical Cryptography Toolkit — built for a Network Security mini project. All computation happens locally in your browser.</footer>
+</div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
