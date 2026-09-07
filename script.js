@@ -481,6 +481,10 @@ function buildProcessHtml(cipherId, text, key, mode){
    UI WIRING — Workspace
 ====================================================================== */
 let currentMode = 'E';
+// Each mode remembers its own last-generated process breakdown, so
+// switching tabs (or the auto-transfer to Decrypt) never erases work
+// you've already produced — it just shows/hides the right one.
+let processCache = { E: '', D: '' };
 
 function populateCipherSelect(selectEl){
   selectEl.innerHTML = '';
@@ -497,7 +501,11 @@ function setMode(m){
   document.getElementById('modeDecryptBtn').classList.toggle('active', m==='D');
   document.getElementById('outputEyebrow').textContent = m==='E' ? 'Encrypted text' : 'Decrypted text';
   document.getElementById('processToggleLabel').textContent = m==='E' ? 'Show encryption process' : 'Show decryption process';
-  hideProcess();
+  // Restore whichever process was last generated for THIS mode (or a
+  // gentle placeholder if none yet) instead of clearing it. The panel's
+  // open/closed state is left exactly as the user had it.
+  document.getElementById('processContent').innerHTML =
+    processCache[m] || `<div class="steps-note">Run ${m==='E'?'Encrypt':'Decrypt'} to see the step-by-step process here.</div>`;
 }
 
 function onCipherChange(){
@@ -505,6 +513,9 @@ function onCipherChange(){
   document.getElementById('keyHint').textContent = CIPHERS[id].hint;
   const auto = document.getElementById('autoKeyBtn');
   auto.style.display = (id==='mono' || id==='otp') ? 'inline-block' : 'none';
+  // Switching ciphers invalidates any previously shown process for both
+  // tabs, so clear the cache fully here (unlike setMode, which preserves it).
+  processCache = { E: '', D: '' };
   hideProcess();
 }
 
@@ -543,27 +554,33 @@ function runCipher(){
     document.getElementById('charCount').textContent = text.length;
     document.getElementById('keyUsedChip').textContent = key;
 
-    /* ----------------------------------------------------------------
-       AUTO-TRANSFER: after a successful Encrypt run, carry the
-       ciphertext into the same text field used for decryption and
-       flip the workspace into Decrypt mode. The cipher and key stay
-       exactly as they are (same select, same key field), so both are
-       automatically available for the follow-up decrypt. Decryption
-       itself is NOT triggered here — runCipher() is not called again —
-       the user must press Run/Decrypt manually.
-       Independent decryption (typing ciphertext + key directly while
-       already in Decrypt mode) never enters this block, so it is
-       completely unaffected.
-    ---------------------------------------------------------------- */
-    if(modeUsed === 'E'){
-      document.getElementById('textInput').value = output;
-      setMode('D'); // updates toggle buttons/labels; also clears the process panel below
-    }
+    // Build the process breakdown for the mode that actually ran, and
+    // cache it under that mode so it survives future tab switches.
+    const processHtml = buildProcessHtml(id, text, key, modeUsed);
+    processCache[modeUsed] = processHtml;
 
-    // Built (or rebuilt, if setMode just cleared it above) using the mode
-    // that actually produced this output, so the process view always
-    // matches what just ran.
-    document.getElementById('processContent').innerHTML = buildProcessHtml(id, text, key, modeUsed);
+    if(modeUsed === 'E'){
+      /* --------------------------------------------------------------
+         AUTO-TRANSFER: after a successful Encrypt run, carry the
+         ciphertext into the same text field used for decryption and
+         flip the workspace into Decrypt mode. The cipher and key stay
+         exactly as they are (same select, same key field), so both are
+         automatically available for the follow-up decrypt. Decryption
+         itself is NOT triggered here — runCipher() is not called again —
+         the user must press Run/Decrypt manually.
+         The old Decrypt-tab process (if any) belonged to a different
+         ciphertext, so it's cleared here — setMode('D') will then show
+         a "run to see the process" placeholder until the user decrypts.
+         Independent decryption (typing ciphertext + key directly while
+         already in Decrypt mode) never enters this block, so it is
+         completely unaffected.
+      -------------------------------------------------------------- */
+      processCache.D = '';
+      document.getElementById('textInput').value = output;
+      setMode('D'); // updates toggle buttons/labels and shows the (now empty) Decrypt process area
+    } else {
+      document.getElementById('processContent').innerHTML = processHtml;
+    }
   }catch(e){
     showError(errorBox, e.message);
     document.getElementById('outputText').textContent = 'Output will appear here once you run a cipher.';
@@ -578,6 +595,7 @@ function clearWorkspace(){
   document.getElementById('execTime').textContent = '—';
   document.getElementById('charCount').textContent = '—';
   document.getElementById('keyUsedChip').textContent = '—';
+  processCache = { E: '', D: '' };
   hideProcess();
   hideError(document.getElementById('errorBox'));
 }
