@@ -485,6 +485,14 @@ let currentMode = 'E';
 // switching tabs (or the auto-transfer to Decrypt) never erases work
 // you've already produced — it just shows/hides the right one.
 let processCache = { E: '', D: '' };
+// Each mode also remembers the exact text + key it was last run with
+// (or auto-loaded with, in Decrypt's case), so switching back to a tab
+// shows you what was actually there — e.g. your original plaintext —
+// instead of leaving the shared box showing whatever the other tab left.
+let inputCache = {
+  E: { text: '', key: '', hasData: false },
+  D: { text: '', key: '', hasData: false }
+};
 
 function populateCipherSelect(selectEl){
   selectEl.innerHTML = '';
@@ -506,6 +514,13 @@ function setMode(m){
   // open/closed state is left exactly as the user had it.
   document.getElementById('processContent').innerHTML =
     processCache[m] || `<div class="steps-note">Run ${m==='E'?'Encrypt':'Decrypt'} to see the step-by-step process here.</div>`;
+  // Restore whichever text + key were last associated with THIS mode.
+  // Only restores if this mode actually has remembered data — so toggling
+  // to a tab you haven't used yet never wipes text you're currently typing.
+  if(inputCache[m].hasData){
+    document.getElementById('textInput').value = inputCache[m].text;
+    document.getElementById('keyInput').value = inputCache[m].key;
+  }
 }
 
 function onCipherChange(){
@@ -558,6 +573,9 @@ function runCipher(){
     // cache it under that mode so it survives future tab switches.
     const processHtml = buildProcessHtml(id, text, key, modeUsed);
     processCache[modeUsed] = processHtml;
+    // Remember exactly what text + key this mode was run with, so
+    // switching back to this tab later shows this, not the other tab's data.
+    inputCache[modeUsed] = { text, key, hasData: true };
 
     if(modeUsed === 'E'){
       /* --------------------------------------------------------------
@@ -571,11 +589,15 @@ function runCipher(){
          The old Decrypt-tab process (if any) belonged to a different
          ciphertext, so it's cleared here — setMode('D') will then show
          a "run to see the process" placeholder until the user decrypts.
+         The Decrypt tab's remembered text/key IS set here though (to the
+         new ciphertext), so switching to Decrypt shows the right thing
+         even before Decrypt has actually been clicked.
          Independent decryption (typing ciphertext + key directly while
          already in Decrypt mode) never enters this block, so it is
          completely unaffected.
       -------------------------------------------------------------- */
       processCache.D = '';
+      inputCache.D = { text: output, key, hasData: true };
       document.getElementById('textInput').value = output;
       setMode('D'); // updates toggle buttons/labels and shows the (now empty) Decrypt process area
     } else {
@@ -596,6 +618,7 @@ function clearWorkspace(){
   document.getElementById('charCount').textContent = '—';
   document.getElementById('keyUsedChip').textContent = '—';
   processCache = { E: '', D: '' };
+  inputCache = { E: { text:'', key:'', hasData:false }, D: { text:'', key:'', hasData:false } };
   hideProcess();
   hideError(document.getElementById('errorBox'));
 }
