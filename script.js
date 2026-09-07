@@ -528,12 +528,14 @@ function runCipher(){
   const key = document.getElementById('keyInput').value.trim();
   const text = document.getElementById('textInput').value;
   const cipher = CIPHERS[id];
+  const modeUsed = currentMode; // capture the mode this run was executed in,
+                                 // since it may change below (auto-transfer to Decrypt)
 
   if(!key){ showError(errorBox, 'Please enter a key (or press Auto if available).'); return; }
 
   try{
     const start = performance.now();
-    const output = currentMode==='E' ? cipher.enc(text,key) : cipher.dec(text,key);
+    const output = modeUsed==='E' ? cipher.enc(text,key) : cipher.dec(text,key);
     const elapsed = performance.now() - start;
 
     document.getElementById('outputText').textContent = output || '(empty)';
@@ -541,8 +543,27 @@ function runCipher(){
     document.getElementById('charCount').textContent = text.length;
     document.getElementById('keyUsedChip').textContent = key;
 
-    const processContent = document.getElementById('processContent');
-    processContent.innerHTML = buildProcessHtml(id, text, key, currentMode);
+    /* ----------------------------------------------------------------
+       AUTO-TRANSFER: after a successful Encrypt run, carry the
+       ciphertext into the same text field used for decryption and
+       flip the workspace into Decrypt mode. The cipher and key stay
+       exactly as they are (same select, same key field), so both are
+       automatically available for the follow-up decrypt. Decryption
+       itself is NOT triggered here — runCipher() is not called again —
+       the user must press Run/Decrypt manually.
+       Independent decryption (typing ciphertext + key directly while
+       already in Decrypt mode) never enters this block, so it is
+       completely unaffected.
+    ---------------------------------------------------------------- */
+    if(modeUsed === 'E'){
+      document.getElementById('textInput').value = output;
+      setMode('D'); // updates toggle buttons/labels; also clears the process panel below
+    }
+
+    // Built (or rebuilt, if setMode just cleared it above) using the mode
+    // that actually produced this output, so the process view always
+    // matches what just ran.
+    document.getElementById('processContent').innerHTML = buildProcessHtml(id, text, key, modeUsed);
   }catch(e){
     showError(errorBox, e.message);
     document.getElementById('outputText').textContent = 'Output will appear here once you run a cipher.';
