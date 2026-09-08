@@ -249,11 +249,19 @@ function columnOrder(key){
     .sort((a,b)=> a[0]<b[0] ? -1 : a[0]>b[0] ? 1 : a[1]-b[1])
     .map(pair=>pair[1]);
 }
+// Shared by columnarEncrypt() AND columnarProcessHtml() so the padding
+// character used to complete the rectangular grid can never drift out of
+// sync between the actual ciphertext and its on-screen visualization.
+// Picks 'x' when the cleaned input contains lowercase letters, 'X' otherwise,
+// so the padding matches the case of the surrounding ciphertext.
+function columnarPadChar(cleanText){
+  return /[a-z]/.test(cleanText) ? 'x' : 'X';
+}
 function columnarEncrypt(text, key){
   text = text.replace(/ /g,'');
   const nCols = key.length;
   const nRows = Math.ceil(text.length/nCols);
-  const padded = text.padEnd(nRows*nCols,'X');
+  const padded = text.padEnd(nRows*nCols, columnarPadChar(text));
   const grid=[];
   for(let r=0;r<nRows;r++) grid.push(padded.slice(r*nCols,r*nCols+nCols));
   const order = columnOrder(key);
@@ -270,7 +278,13 @@ function columnarDecrypt(text, key){
   for(const col of order){ cols[col]=text.slice(idx, idx+nRows); idx+=nRows; }
   let out='';
   for(let r=0;r<nRows;r++) for(let c=0;c<nCols;c++) out += cols[c][r];
-  return out.replace(/X+$/,'');
+  // Strip trailing padding, case-insensitively (padding may be 'x' or 'X'
+  // depending on the original text's case — see columnarPadChar above).
+  // Known limitation, pre-existing in this padding scheme: this is a
+  // heuristic based on trailing characters, so genuine plaintext that
+  // legitimately ends in x/X could theoretically be over-trimmed. Accepted
+  // trade-off for this educational cipher, unchanged from the original design.
+  return out.replace(/[Xx]+$/,'');
 }
 
 /* ---------- Registry ---------- */
@@ -441,7 +455,9 @@ function columnarProcessHtml(text, key, mode){
   let html = '';
   if(mode==='E'){
     const nRows = Math.ceil(clean.length/nCols);
-    padded = clean.padEnd(nRows*nCols,'X');
+    // Uses the SAME columnarPadChar() helper as columnarEncrypt(), so this
+    // visualization can never disagree with the actual generated ciphertext.
+    padded = clean.padEnd(nRows*nCols, columnarPadChar(clean));
     grid=[];
     for(let r=0;r<nRows;r++) grid.push(padded.slice(r*nCols,r*nCols+nCols));
     let tbl = '<table class="grid-viz"><tr>';
